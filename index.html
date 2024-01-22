@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Snake Xenzia</title>
+  <style>
+    canvas {
+      border: 1px solid #ccc;
+      display: block;
+      margin: 20px auto;
+    }
+  </style>
+</head>
+
+<body>
+
+  <canvas id="snakeCanvas" width="400" height="400"></canvas>
+
+  <script>
+
+    const canvas = document.getElementById('snakeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const gridSize = 20;
+    const foodSize = 20;
+
+    class SnakeGame {
+      constructor() {
+        this.snake = [{ x: 10, y: 10 }];
+        this.food = { x: 0, y: 0 };
+        this.direction = 'right';
+        this.gridWidth = canvas.width / gridSize;
+        this.gridHeight = canvas.height / gridSize;
+      }
+
+      draw() {
+        // Clear the canvas
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw the snake
+        ctx.fillStyle = 'green';
+        for (let i = 0; i < this.snake.length; i++) {
+          ctx.fillRect(this.snake[i].x * gridSize, this.snake[i].y * gridSize, gridSize, gridSize);
+        }
+
+        // Draw the food
+        ctx.fillStyle = 'red';
+
+        //convas draw circle  
+        ctx.beginPath();
+        ctx.fillRect(this.food.x * gridSize, this.food.y * gridSize, gridSize, gridSize);
+        // ctx.arc(this.food.x * foodSize, this.food.y * foodSize, foodSize / 2, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+
+      moveSnake() {
+        // Update the snake position based on the direction
+        const head = { x: this.snake[0].x, y: this.snake[0].y };
+        switch (this.direction) {
+          case 'up':
+            head.y--;
+            break;
+          case 'down':
+            head.y++;
+            break;
+          case 'left':
+            head.x--;
+            break;
+          case 'right':
+            head.x++;
+            break;
+        }
+
+        // Check for collision with the walls
+        if (head.x < 0) {
+          head.x = this.gridWidth - 1;
+        }
+        if (head.x >= this.gridWidth) {
+          head.x = 0;
+        }
+        if (head.y < 0) {
+          head.y = this.gridHeight - 1;
+        }
+        if (head.y >= this.gridHeight) {
+          head.y = 0;
+        }
+
+        // Check for collision with food
+        this.checkCollision()
+
+        // Add the new head to the front of the snake
+        this.snake.pop();
+        this.snake.unshift(head);
+      }
+
+      checkCollision() {
+        // Check if the snake head is on the same position as the food
+        const head = this.snake[0];
+
+        console.log(head.x, this.food.x, head.y, this.food.y);
+          if (head.x === this.food.x && head.y === this.food.y) {
+            // Increase snake length and generate new food
+            this.snake.push({});
+            this.generateFood();
+          }
+        }
+
+      handleKeyDown(e) {
+        switch (e.key) {
+          case 'ArrowUp':
+            this.direction = 'up';
+            break;
+          case 'ArrowDown':
+            this.direction = 'down';
+            break;
+          case 'ArrowLeft':
+            this.direction = 'left';
+            break;
+          case 'ArrowRight':
+            this.direction = 'right';
+            break;
+        }
+      }
+
+      generateFood() {
+        // Generate random coordinates for the food
+        this.food.x = Math.floor(Math.random() * (canvas.width / gridSize));
+        this.food.y = Math.floor(Math.random() * (canvas.height / gridSize));
+      }
+
+      gameLoop() {
+        this.moveSnake();
+        this.draw();
+        setTimeout(this.gameLoop.bind(this), 100); // Adjust the speed by changing the timeout value
+      }
+
+      start() {
+        this.generateFood();
+        document.addEventListener('keydown', this.handleKeyDown.bind(this));
+        this.gameLoop();
+      }
+    }
+
+    const snakeGame = new SnakeGame();
+    snakeGame.start();
+  </script>
+</body>
+
+</html>
